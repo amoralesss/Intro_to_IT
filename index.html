@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Introduction to IT — Interactive Lesson</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:    #0f1b35;
+  --indigo:  #2d3f8e;
+  --electric:#4f7cff;
+  --sky:     #7eb8f7;
+  --mint:    #00d4aa;
+  --coral:   #ff6b6b;
+  --amber:   #ffbe3d;
+  --lilac:   #b19fff;
+  --bg:      #f4f6ff;
+  --card:    #ffffff;
+  --text:    #1a2340;
+  --muted:   #5a6484;
+  --border:  #dde3f5;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); line-height: 1.65; overflow: hidden; }
+
+/* ── SHELL ── */
+#shell { display: flex; flex-direction: column; height: 100vh; }
+
+/* ── TOP BAR ── */
+#topbar {
+  flex-shrink: 0; background: var(--navy); color: white;
+  display: flex; align-items: center; gap: 1rem; padding: .6rem 1.4rem; z-index: 200;
+}
+#topbar .tb-title { font-family: 'Fraunces', serif; font-size: 1rem; font-weight: 700; flex: 1; }
+#topbar .tb-title span { color: var(--electric); }
+.pb-wrap { flex: 1; max-width: 240px; height: 6px; background: rgba(255,255,255,.15); border-radius: 99px; overflow: hidden; }
+.pb-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--electric), var(--mint)); border-radius: 99px; transition: width .4s ease; }
+#topbar .tb-pct { font-size: .75rem; font-weight: 700; color: var(--sky); min-width: 2.2rem; text-align: right; }
+
+/* ── STEP DOTS ── */
+#stepdots {
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  gap: .5rem; padding: .5rem 1rem; background: white; border-bottom: 1px solid var(--border);
+}
+.dot-step {
+  width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border);
+  background: white; display: flex; align-items: center; justify-content: center;
+  font-size: .65rem; font-weight: 800; color: var(--muted); cursor: pointer; transition: all .2s;
+}
+.dot-step.visited { border-color: var(--electric); color: var(--electric); }
+.dot-step.active  { background: var(--electric); border-color: var(--electric); color: white; transform: scale(1.15); }
+.dot-connector { width: 24px; height: 2px; background: var(--border); border-radius: 99px; transition: background .3s; }
+.dot-connector.done { background: var(--electric); }
+
+/* ── PAGES ── */
+#pages { flex: 1; overflow: hidden; position: relative; }
+.page { position: absolute; inset: 0; overflow-y: auto; padding: 1.4rem; display: none; }
+.page.active { display: block; }
+.page.slide-in-fwd  { animation: slideInFwd  .32s ease forwards; }
+.page.slide-in-back { animation: slideInBack .32s ease forwards; }
+@keyframes slideInFwd  { from { opacity:0; transform:translateX( 40px); } to { opacity:1; transform:translateX(0); } }
+@keyframes slideInBack { from { opacity:0; transform:translateX(-40px); } to { opacity:1; transform:translateX(0); } }
+
+/* ── BOTTOM NAV ── */
+#botnav {
+  flex-shrink: 0; background: white; border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; padding: .7rem 1.4rem; gap: 1rem;
+}
+#botnav .step-label { font-size: .8rem; font-weight: 700; color: var(--muted); text-align: center; flex: 1; }
+
+/* ── CONTENT WRAP ── */
+.content-wrap { max-width: 820px; margin: 0 auto; padding-bottom: 1rem; }
+
+/* ── LANDING ── */
+.hero-inner {
+  background: var(--navy); border-radius: 20px; padding: 2.4rem 2rem;
+  text-align: center; color: white; position: relative; overflow: hidden; margin-bottom: 1.3rem;
+}
+.hero-inner::before {
+  content:''; position:absolute; inset:0;
+  background: radial-gradient(ellipse at 25% 65%, rgba(79,124,255,.35) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 20%, rgba(177,159,255,.25) 0%, transparent 55%);
+}
+.hero-inner * { position: relative; }
+.hero-badge {
+  display: inline-block; background: rgba(79,124,255,.25); border: 1px solid rgba(79,124,255,.5);
+  color: var(--sky); font-size: .7rem; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; padding: .28rem 1rem; border-radius: 99px; margin-bottom: .85rem;
+}
+.hero-inner h1 { font-family: 'Fraunces', serif; font-size: clamp(1.8rem,5vw,2.9rem); line-height: 1.1; margin-bottom: .6rem; }
+.hero-inner h1 span { color: var(--electric); }
+.hero-inner p { color: rgba(255,255,255,.7); font-size: .95rem; max-width: 500px; margin: 0 auto 1.2rem; }
+.hero-meta { display: flex; gap: 1.1rem; justify-content: center; flex-wrap: wrap; }
+.hero-meta span { font-size: .8rem; color: rgba(255,255,255,.6); display: flex; align-items: center; gap: .35rem; }
+.hero-meta .hm-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.module-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; margin-bottom: 1.3rem; }
+@media (max-width:480px) { .module-grid { grid-template-columns: 1fr; } }
+.module-card {
+  background: white; border: 2px solid var(--border); border-radius: 16px;
+  padding: 1.1rem; cursor: pointer; transition: all .2s;
+  display: flex; align-items: flex-start; gap: .7rem;
+}
+.module-card:hover { border-color: var(--electric); transform: translateY(-2px); box-shadow: 0 6px 18px rgba(79,124,255,.12); }
+.mc-icon { font-size: 1.7rem; flex-shrink: 0; }
+.mc-num   { font-size: .67rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: .12rem; }
+.mc-title { font-weight: 700; font-size: .93rem; color: var(--navy); }
+.mc-desc  { font-size: .78rem; color: var(--muted); margin-top: .18rem; }
+
+/* ── SECTION HEADER ── */
+.section-header { margin-bottom: 1.3rem; }
+.section-tag {
+  display: inline-flex; align-items: center; gap: .35rem;
+  font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .1em;
+  padding: .28rem .85rem; border-radius: 99px; margin-bottom: .55rem;
+}
+.section-header h2 { font-family: 'Fraunces', serif; font-size: clamp(1.5rem,3.5vw,2rem); color: var(--navy); margin-bottom: .3rem; }
+.section-header p { color: var(--muted); font-size: .91rem; }
+
+/* ── CARDS ── */
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.25rem; margin-bottom: .9rem; box-shadow: 0 2px 8px rgba(15,27,53,.05); }
+.card h3 { font-size: .98rem; font-weight: 700; margin-bottom: .4rem; }
+.card p  { color: var(--muted); font-size: .9rem; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: .9rem; }
+@media (max-width:580px) { .grid-2,.grid-3 { grid-template-columns: 1fr; } }
+
+/* ── HW DIAGRAM ── */
+.hw-diagram {
+  background: var(--navy); border-radius: 16px 16px 0 0; padding: 1.2rem 1.2rem .85rem;
+  display: flex; flex-wrap: wrap; gap: .75rem; justify-content: center;
+}
+.hw-part {
+  background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15);
+  border-radius: 12px; padding: .7rem .95rem; text-align: center;
+  cursor: pointer; transition: all .2s; min-width: 95px; flex: 1;
+}
+.hw-part:hover,.hw-part.selected { background: var(--electric); border-color: var(--electric); transform: translateY(-3px); box-shadow: 0 8px 20px rgba(79,124,255,.35); }
+.hw-part .hw-icon { font-size: 1.7rem; margin-bottom: .25rem; }
+.hw-part .hw-name { font-size: .76rem; font-weight: 700; color: white; }
+.hw-info { background: #1a2a55; border-radius: 0 0 16px 16px; padding: .85rem 1.25rem; color: white; font-size: .87rem; min-height: 56px; }
+.hw-info strong { color: var(--sky); }
+
+/* ── SW PILLS ── */
+.sw-pill { display: inline-flex; align-items: center; gap: .35rem; padding: .38rem .85rem; border-radius: 99px; font-size: .79rem; font-weight: 600; margin: .18rem; }
+
+/* ── NETWORK SVG ── */
+.network-svg-wrap { background: var(--navy); border-radius: 16px; padding: 1rem; margin-bottom: .9rem; text-align: center; }
+.network-svg-wrap svg { max-width: 100%; height: auto; }
+
+/* ── CLOUD ── */
+.cloud-row { display: flex; gap: .75rem; flex-wrap: wrap; justify-content: center; margin: .85rem 0; }
+.cloud-item { background: white; border: 2px solid var(--border); border-radius: 14px; padding: .8rem 1rem; text-align: center; flex: 1; min-width: 90px; transition: all .2s; }
+.cloud-item:hover { border-color: var(--mint); transform: translateY(-2px); }
+.cloud-item .ci-icon { font-size: 1.55rem; margin-bottom: .25rem; }
+.cloud-item .ci-name { font-size: .76rem; font-weight: 700; color: var(--navy); }
+.cloud-item .ci-ex   { font-size: .69rem; color: var(--muted); }
+
+/* ── ACTIVITY BOX ── */
+.activity-box { background: var(--navy); border-radius: 18px; padding: 1.2rem; margin-bottom: .9rem; color: white; }
+.activity-box h3 { font-family: 'Fraunces', serif; font-size: 1.1rem; margin-bottom: .22rem; }
+.activity-box .activity-sub { font-size: .8rem; color: rgba(255,255,255,.6); margin-bottom: .9rem; }
+
+/* ── EMAIL / PHISHING ── */
+.email-card { background: white; border-radius: 12px; padding: .95rem; margin-bottom: .75rem; border-left: 5px solid transparent; transition: all .25s; color: var(--text); }
+.email-card .email-from    { font-size: .74rem; color: var(--muted); margin-bottom: .18rem; }
+.email-card .email-subject { font-weight: 700; font-size: .9rem; margin-bottom: .35rem; }
+.email-card .email-body    { font-size: .84rem; color: var(--muted); margin-bottom: .75rem; }
+.email-card .email-actions { display: flex; gap: .5rem; }
+.email-btn { flex: 1; padding: .42rem; border: 2px solid transparent; border-radius: 8px; font-family: 'DM Sans',sans-serif; font-size: .79rem; font-weight: 700; cursor: pointer; transition: all .2s; }
+.email-btn.legit { background: rgba(0,212,170,.15); color: #00a882; border-color: rgba(0,212,170,.4); }
+.email-btn.legit:hover { background: var(--mint); color: white; }
+.email-btn.phish { background: rgba(255,107,107,.15); color: #cc4444; border-color: rgba(255,107,107,.4); }
+.email-btn.phish:hover { background: var(--coral); color: white; }
+.email-card.correct-legit { border-left-color: var(--mint);  background: rgba(0,212,170,.05); }
+.email-card.correct-phish { border-left-color: var(--coral); background: rgba(255,107,107,.05); }
+.email-card.wrong          { border-left-color: var(--amber); background: rgba(255,190,61,.05); }
+.email-feedback { font-size: .79rem; margin-top: .5rem; padding: .42rem .6rem; border-radius: 8px; display: none; }
+.email-feedback.show { display: block; }
+.email-feedback.good { background: rgba(0,212,170,.12); color: #007a5e; }
+.email-feedback.bad  { background: rgba(255,190,61,.15); color: #8a6100; }
+
+/* ── PASSWORD ── */
+.pw-option { background: rgba(255,255,255,.08); border: 2px solid rgba(255,255,255,.15); border-radius: 10px; padding: .62rem 1rem; margin-bottom: .42rem; cursor: pointer; font-family: monospace; font-size: .92rem; color: white; transition: all .2s; }
+.pw-option:hover        { border-color: var(--electric); background: rgba(79,124,255,.2); }
+.pw-option.selected-good{ border-color: var(--mint);  background: rgba(0,212,170,.15); }
+.pw-option.selected-bad { border-color: var(--coral); background: rgba(255,107,107,.15); }
+
+/* ── MATCH ── */
+.match-pair { display: flex; gap: .5rem; margin-bottom: .6rem; align-items: center; }
+.match-term { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); border-radius: 8px; padding: .42rem .8rem; font-weight: 700; font-size: .85rem; flex: 0 0 125px; color: white; }
+.match-select { flex: 1; padding: .42rem .7rem; border-radius: 8px; border: 2px solid rgba(255,255,255,.2); background: rgba(255,255,255,.08); color: white; font-family: 'DM Sans',sans-serif; font-size: .84rem; cursor: pointer; }
+.match-select option { background: #1a2340; color: white; }
+.match-indicator { font-size: .95rem; width: 22px; text-align: center; }
+
+/* ── HWSW BUTTONS ── */
+.hwsw-row { display: flex; align-items: center; gap: .5rem; margin-bottom: .5rem; flex-wrap: wrap; }
+.hwsw-label { background: rgba(255,255,255,.1); border-radius: 8px; padding: .38rem .8rem; color: white; font-weight: 700; font-size: .85rem; min-width: 130px; }
+.hwsw-btn { flex: 1; min-width: 82px; padding: .4rem .55rem; border: 2px solid transparent; border-radius: 8px; font-family: 'DM Sans',sans-serif; font-size: .77rem; font-weight: 700; cursor: pointer; transition: all .2s; }
+.hwsw-btn.hw { background: rgba(79,124,255,.15); color: #6690ff; border-color: rgba(79,124,255,.4); }
+.hwsw-btn.hw:hover,.hwsw-btn.hw.chosen { background: var(--electric); color: white; border-color: var(--electric); }
+.hwsw-btn.sw { background: rgba(177,159,255,.15); color: #b19fff; border-color: rgba(177,159,255,.4); }
+.hwsw-btn.sw:hover,.hwsw-btn.sw.chosen { background: var(--lilac); color: white; border-color: var(--lilac); }
+.hwsw-btn.dim { opacity: .42; }
+
+/* ── RESULT BOX ── */
+.result-box { font-size: .82rem; margin-top: .7rem; padding: .62rem .95rem; border-radius: 10px; display: none; }
+.result-box.show { display: block; }
+.result-box.good { background: rgba(0,212,170,.15); color: #00c299; }
+.result-box.bad  { background: rgba(255,107,107,.15); color: #ff9090; }
+
+/* ── BUTTONS ── */
+.btn { display: inline-flex; align-items: center; gap: .42rem; padding: .58rem 1.25rem; border-radius: 10px; border: none; font-family: 'DM Sans',sans-serif; font-size: .87rem; font-weight: 700; cursor: pointer; transition: all .2s; }
+.btn-primary   { background: var(--electric); color: white; }
+.btn-primary:hover { background: #3a66f0; transform: translateY(-1px); }
+.btn-secondary { background: white; color: var(--electric); border: 2px solid var(--electric); }
+.btn-secondary:hover { background: var(--electric); color: white; }
+.btn-ghost { background: rgba(255,255,255,.12); color: white; border: 2px solid rgba(255,255,255,.25); }
+.btn-ghost:hover { background: rgba(255,255,255,.22); }
+.btn:disabled { opacity: .4; cursor: not-allowed; transform: none !important; }
+
+/* ── GLOSSARY ── */
+.glossary-item { border-left: 3px solid var(--electric); padding: .52rem .9rem; margin-bottom: .7rem; background: white; border-radius: 0 10px 10px 0; }
+.glossary-item dt { font-weight: 700; font-size: .88rem; color: var(--navy); }
+.glossary-item dd { font-size: .83rem; color: var(--muted); margin-top: .08rem; }
+
+/* ── TAG COLOURS ── */
+.tag-hw    { background: rgba(79,124,255,.12);  color: var(--electric); }
+.tag-net   { background: rgba(0,212,170,.12);   color: #00a882; }
+.tag-sec   { background: rgba(255,107,107,.12); color: #cc4444; }
+.tag-cloud { background: rgba(177,159,255,.18); color: #7b5ea7; }
+
+/* ── COMPLETE ── */
+.complete-screen { text-align: center; padding: 1.8rem 1rem; }
+.complete-screen .trophy { font-size: 4.5rem; margin-bottom: .7rem; }
+.complete-screen h2 { font-family: 'Fraunces', serif; font-size: 1.85rem; color: var(--navy); margin-bottom: .35rem; }
+.complete-screen > p { color: var(--muted); max-width: 360px; margin: 0 auto 1.2rem; }
+.final-stats { display: flex; gap: .85rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1.4rem; }
+.stat-box { background: white; border: 2px solid var(--border); border-radius: 14px; padding: .85rem 1.2rem; text-align: center; min-width: 95px; }
+.stat-box .sv { font-family: 'Fraunces', serif; font-size: 1.85rem; color: var(--electric); }
+.stat-box .sl { font-size: .7rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+</style>
+</head>
+<body>
+<div id="shell">
+
+  <!-- TOP BAR -->
+  <div id="topbar">
+    <div class="tb-title">Intro to <span>IT</span></div>
+    <div class="pb-wrap"><div class="pb-fill" id="pbFill"></div></div>
+    <div class="tb-pct" id="pbPct">0%</div>
+  </div>
+
+  <!-- STEP DOTS -->
+  <div id="stepdots"></div>
+
+  <!-- PAGES -->
+  <div id="pages">
+
+    <!-- PAGE 0: LANDING -->
+    <div class="page active" id="page0">
+      <div style="max-width:740px;margin:0 auto;padding-bottom:1rem">
+        <div class="hero-inner">
+          <div class="hero-badge">📚 Interactive Lesson</div>
+          <h1>Introduction to <span>Information Technology</span></h1>
+          <p>A hands-on tour of the technology that powers our world — no prior experience needed.</p>
+          <div class="hero-meta">
+            <span><span class="hm-dot" style="background:var(--mint)"></span>10–15 min</span>
+            <span><span class="hm-dot" style="background:var(--amber)"></span>4 modules</span>
+            <span><span class="hm-dot" style="background:var(--coral)"></span>3 activities</span>
+          </div>
+        </div>
+        <div class="module-grid">
+          <div class="module-card" onclick="goTo(1)">
+            <div class="mc-icon">🖥️</div>
+            <div><div class="mc-num">Module 1</div><div class="mc-title">Hardware &amp; Software</div><div class="mc-desc">CPUs, RAM, storage, and the software that runs it all.</div></div>
+          </div>
+          <div class="module-card" onclick="goTo(2)">
+            <div class="mc-icon">🌐</div>
+            <div><div class="mc-num">Module 2</div><div class="mc-title">Networks &amp; Internet</div><div class="mc-desc">How devices connect and data travels the globe.</div></div>
+          </div>
+          <div class="module-card" onclick="goTo(3)">
+            <div class="mc-icon">🔐</div>
+            <div><div class="mc-num">Module 3</div><div class="mc-title">Cybersecurity</div><div class="mc-desc">Threats, phishing, passwords, and staying safe online.</div></div>
+          </div>
+          <div class="module-card" onclick="goTo(4)">
+            <div class="mc-icon">☁️</div>
+            <div><div class="mc-num">Module 4</div><div class="mc-title">Cloud Computing</div><div class="mc-desc">What the cloud is, how it works, and why it matters.</div></div>
+          </div>
+        </div>
+        <div style="text-align:center">
+          <button class="btn btn-primary" style="font-size:1rem;padding:.72rem 2rem" onclick="goTo(1)">Start Lesson →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE 1: HARDWARE & SOFTWARE -->
+    <div class="page" id="page1">
+      <div class="content-wrap">
+        <div class="section-header">
+          <div class="section-tag tag-hw">🖥️ Module 1 of 4</div>
+          <h2>Hardware &amp; Software</h2>
+          <p>Every device is made of two inseparable parts: physical components you can touch, and invisible programs that make them useful.</p>
+        </div>
+
+        <div style="margin-bottom:.9rem">
+          <div class="hw-diagram">
+            <div class="hw-part" onclick="showHW('cpu',this)"><div class="hw-icon">⚙️</div><div class="hw-name">CPU</div></div>
+            <div class="hw-part" onclick="showHW('ram',this)"><div class="hw-icon">🧠</div><div class="hw-name">RAM</div></div>
+            <div class="hw-part" onclick="showHW('storage',this)"><div class="hw-icon">💾</div><div class="hw-name">Storage</div></div>
+            <div class="hw-part" onclick="showHW('gpu',this)"><div class="hw-icon">🖼️</div><div class="hw-name">GPU</div></div>
+            <div class="hw-part" onclick="showHW('io',this)"><div class="hw-icon">⌨️</div><div class="hw-name">I/O Devices</div></div>
+          </div>
+          <div class="hw-info" id="hwInfo"><strong>👆 Click any component</strong> to learn what it does.</div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card"><h3>🔩 Hardware</h3><p>The <strong>physical parts</strong> of a computer — things you can see and touch. Examples: your screen, keyboard, hard drive, and the chips inside your phone.</p></div>
+          <div class="card"><h3>💿 Software</h3><p><strong>Instructions</strong> that tell hardware what to do. Software has no physical form — it's code stored and run on your device.</p></div>
+        </div>
+
+        <div class="card">
+          <h3>🗂️ Types of Software</h3>
+          <p style="margin-bottom:.6rem">Software comes in layers, each with a different job:</p>
+          <div>
+            <span class="sw-pill" style="background:rgba(79,124,255,.12);color:var(--electric)">🖥️ Operating System — Windows, macOS, Android</span>
+            <span class="sw-pill" style="background:rgba(0,212,170,.12);color:#00a882">📱 Applications — Word, Chrome, Instagram</span>
+            <span class="sw-pill" style="background:rgba(255,190,61,.15);color:#8a6100">⚙️ Drivers — Make devices talk to the OS</span>
+            <span class="sw-pill" style="background:rgba(177,159,255,.18);color:#7b5ea7">🔧 Utilities — Antivirus, disk cleanup tools</span>
+          </div>
+        </div>
+
+        <div class="activity-box">
+          <h3>🎯 Quick Check: Hardware or Software?</h3>
+          <div class="activity-sub">Tap your answer for each item below.</div>
+          <div id="hwSwQuiz"></div>
+          <div id="hwSwResult" class="result-box"></div>
+          <button class="btn btn-ghost" style="margin-top:.7rem" onclick="checkHWSW()">Check Answers ✓</button>
+        </div>
+
+        <div class="card">
+          <h3>📖 Key Terms</h3>
+          <dl>
+            <div class="glossary-item"><dt>CPU (Central Processing Unit)</dt><dd>The "brain" — executes instructions and processes data.</dd></div>
+            <div class="glossary-item"><dt>RAM (Random Access Memory)</dt><dd>Short-term memory your computer uses while actively working. Clears when powered off.</dd></div>
+            <div class="glossary-item"><dt>Storage (HDD / SSD)</dt><dd>Long-term memory that holds your files even when powered off.</dd></div>
+            <div class="glossary-item"><dt>Operating System (OS)</dt><dd>Software that manages all hardware and lets other programs run (e.g., Windows, macOS).</dd></div>
+          </dl>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE 2: NETWORKS -->
+    <div class="page" id="page2">
+      <div class="content-wrap">
+        <div class="section-header">
+          <div class="section-tag tag-net">🌐 Module 2 of 4</div>
+          <h2>Networks &amp; the Internet</h2>
+          <p>A network is any group of connected devices. The Internet is the world's largest network — billions of devices all linked together.</p>
+        </div>
+
+        <div class="network-svg-wrap">
+          <svg viewBox="0 0 600 280" xmlns="http://www.w3.org/2000/svg" font-family="DM Sans, sans-serif">
+            <line x1="300" y1="140" x2="120" y2="60"  stroke="#4f7cff" stroke-width="2" stroke-dasharray="5,4" opacity=".6"/>
+            <line x1="300" y1="140" x2="480" y2="60"  stroke="#4f7cff" stroke-width="2" stroke-dasharray="5,4" opacity=".6"/>
+            <line x1="300" y1="140" x2="100" y2="220" stroke="#4f7cff" stroke-width="2" stroke-dasharray="5,4" opacity=".6"/>
+            <line x1="300" y1="140" x2="500" y2="220" stroke="#4f7cff" stroke-width="2" stroke-dasharray="5,4" opacity=".6"/>
+            <line x1="300" y1="140" x2="300" y2="260" stroke="#4f7cff" stroke-width="2" stroke-dasharray="5,4" opacity=".6"/>
+            <circle cx="300" cy="140" r="38" fill="#2d3f8e" stroke="#4f7cff" stroke-width="2.5"/>
+            <text x="300" y="135" text-anchor="middle" font-size="18" fill="white">📡</text>
+            <text x="300" y="155" text-anchor="middle" font-size="9" fill="#7eb8f7" font-weight="700">ROUTER</text>
+            <circle cx="120" cy="60"  r="28" fill="#1a2340" stroke="#00d4aa" stroke-width="2"/><text x="120" y="55"  text-anchor="middle" font-size="14">💻</text><text x="120" y="72"  text-anchor="middle" font-size="8" fill="#00d4aa">Laptop</text>
+            <circle cx="480" cy="60"  r="28" fill="#1a2340" stroke="#00d4aa" stroke-width="2"/><text x="480" y="55"  text-anchor="middle" font-size="14">📱</text><text x="480" y="72"  text-anchor="middle" font-size="8" fill="#00d4aa">Phone</text>
+            <circle cx="100" cy="220" r="28" fill="#1a2340" stroke="#00d4aa" stroke-width="2"/><text x="100" y="215" text-anchor="middle" font-size="14">🖨️</text><text x="100" y="232" text-anchor="middle" font-size="8" fill="#00d4aa">Printer</text>
+            <circle cx="500" cy="220" r="28" fill="#1a2340" stroke="#00d4aa" stroke-width="2"/><text x="500" y="215" text-anchor="middle" font-size="14">🖥️</text><text x="500" y="232" text-anchor="middle" font-size="8" fill="#00d4aa">Desktop</text>
+            <circle cx="300" cy="260" r="28" fill="#1a2340" stroke="#00d4aa" stroke-width="2"/><text x="300" y="255" text-anchor="middle" font-size="14">📺</text><text x="300" y="272" text-anchor="middle" font-size="8" fill="#00d4aa">Smart TV</text>
+            <text x="300" y="18" text-anchor="middle" font-size="11" fill="rgba(255,255,255,.5)">A Local Area Network (LAN) — all devices share one router</text>
+          </svg>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <h3>📶 Types of Networks</h3>
+            <ul style="font-size:.87rem;color:var(--muted);padding-left:1.1rem;line-height:2">
+              <li><strong>LAN</strong> — Local Area Network (home, office)</li>
+              <li><strong>WAN</strong> — Wide Area Network (cities, countries)</li>
+              <li><strong>Internet</strong> — Global WAN connecting billions</li>
+              <li><strong>Wi-Fi</strong> — Wireless LAN using radio waves</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>🔀 How Data Travels</h3>
+            <p style="font-size:.87rem">Data is broken into small <strong>packets</strong>, each labeled with source/destination <strong>IP addresses</strong>. A router directs each packet — like a post office for data.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>🌍 Internet vs. the Web</h3>
+          <p style="margin-bottom:.65rem">People often use these interchangeably — but they're different!</p>
+          <div class="grid-2">
+            <div style="background:rgba(79,124,255,.07);border-radius:10px;padding:.8rem"><div style="font-weight:700;margin-bottom:.22rem;color:var(--electric)">🌐 The Internet</div><div style="font-size:.84rem;color:var(--muted)">The global <em>infrastructure</em> — cables, routers, and protocols that connect devices worldwide.</div></div>
+            <div style="background:rgba(0,212,170,.07);border-radius:10px;padding:.8rem"><div style="font-weight:700;margin-bottom:.22rem;color:#00a882">🕸️ The Web (WWW)</div><div style="font-size:.84rem;color:var(--muted)">A <em>service</em> that runs on the internet — websites and web apps accessed through a browser.</div></div>
+          </div>
+        </div>
+
+        <div class="activity-box">
+          <h3>🎯 Match the Terms</h3>
+          <div class="activity-sub">Match each networking term to its correct definition.</div>
+          <div id="matchQuiz"></div>
+          <button class="btn btn-ghost" style="margin-top:.75rem" onclick="checkMatch()">Check Matches ✓</button>
+          <div id="matchResult" class="result-box" style="margin-top:.6rem"></div>
+        </div>
+
+        <div class="card">
+          <h3>📖 Key Terms</h3>
+          <dl>
+            <div class="glossary-item"><dt>IP Address</dt><dd>A unique number assigned to every device on a network — like a home address for data.</dd></div>
+            <div class="glossary-item"><dt>Router</dt><dd>Device that directs data packets between networks and devices.</dd></div>
+            <div class="glossary-item"><dt>Protocol</dt><dd>A standard set of rules devices use to communicate (e.g., HTTP, TCP/IP).</dd></div>
+            <div class="glossary-item"><dt>Bandwidth</dt><dd>The maximum amount of data that can travel through a connection per second.</dd></div>
+          </dl>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE 3: CYBERSECURITY -->
+    <div class="page" id="page3">
+      <div class="content-wrap">
+        <div class="section-header">
+          <div class="section-tag tag-sec">🔐 Module 3 of 4</div>
+          <h2>Cybersecurity &amp; Online Safety</h2>
+          <p>Cybersecurity means protecting computers, networks, and data from unauthorized access. It's everyone's responsibility — not just IT professionals.</p>
+        </div>
+
+        <div class="grid-3">
+          <div class="card" style="border-top:3px solid var(--coral)"><h3>🦠 Malware</h3><p style="font-size:.85rem">Malicious software designed to harm. Includes <strong>viruses</strong>, <strong>ransomware</strong>, and <strong>spyware</strong>.</p></div>
+          <div class="card" style="border-top:3px solid var(--amber)"><h3>🎣 Phishing</h3><p style="font-size:.85rem">Fake emails or sites that trick you into giving up passwords or financial info.</p></div>
+          <div class="card" style="border-top:3px solid var(--lilac)"><h3>🔑 Weak Passwords</h3><p style="font-size:.85rem">Simple passwords are cracked in seconds. Reusing passwords multiplies the risk.</p></div>
+        </div>
+
+        <div class="activity-box">
+          <h3>🔑 Activity: Pick the Strongest Password</h3>
+          <div class="activity-sub">Which of these would be most secure? Click to choose.</div>
+          <div id="pwOptions"></div>
+          <div id="pwResult" class="result-box"></div>
+        </div>
+
+        <div class="activity-box">
+          <h3>🎣 Activity: Spot the Phishing Email</h3>
+          <div class="activity-sub">For each email: is it <strong>Legitimate</strong> or a <strong>Phishing</strong> attempt?</div>
+          <div id="phishEmails"></div>
+          <div id="phishScore" style="font-size:.83rem;color:rgba(255,255,255,.65);margin-top:.38rem"></div>
+        </div>
+
+        <div class="card">
+          <h3>🛡️ How to Stay Safe Online</h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-top:.65rem">
+            <div style="background:rgba(0,212,170,.07);border-radius:10px;padding:.72rem;font-size:.84rem">✅ <strong>Long, unique passwords</strong> — or a password manager</div>
+            <div style="background:rgba(0,212,170,.07);border-radius:10px;padding:.72rem;font-size:.84rem">✅ <strong>Two-factor authentication (2FA)</strong> wherever possible</div>
+            <div style="background:rgba(0,212,170,.07);border-radius:10px;padding:.72rem;font-size:.84rem">✅ <strong>Keep software updated</strong> — updates patch security holes</div>
+            <div style="background:rgba(0,212,170,.07);border-radius:10px;padding:.72rem;font-size:.84rem">✅ <strong>Verify before you click</strong> — check sender addresses</div>
+            <div style="background:rgba(0,212,170,.07);border-radius:10px;padding:.72rem;font-size:.84rem">✅ <strong>Back up your data</strong> — 3-2-1 rule (3 copies, 2 types, 1 off-site)</div>
+            <div style="background:rgba(0,212,170,.07);border-radius:10px;padding:.72rem;font-size:.84rem">✅ <strong>Use HTTPS sites</strong> — look for the 🔒 in your browser</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE 4: CLOUD COMPUTING -->
+    <div class="page" id="page4">
+      <div class="content-wrap">
+        <div class="section-header">
+          <div class="section-tag tag-cloud">☁️ Module 4 of 4</div>
+          <h2>Cloud Computing</h2>
+          <p>Instead of running everything locally, cloud computing lets you store data and run programs on powerful remote servers — accessed over the internet.</p>
+        </div>
+
+        <div class="card">
+          <h3>☁️ What Is the Cloud?</h3>
+          <p>When you save a photo to Google Photos, stream Netflix, or edit a Google Doc — you're using the cloud. Your data lives on servers in large data centers around the world.</p>
+          <div style="background:var(--bg);border-radius:12px;padding:.85rem;margin-top:.8rem;font-size:.86rem;color:var(--muted)">
+            💡 <strong>Analogy:</strong> Think of the cloud like electricity. You don't generate your own power — you plug in and use what you need. Cloud computing works the same way.
+          </div>
+        </div>
+
+        <div class="cloud-row">
+          <div class="cloud-item"><div class="ci-icon">🗄️</div><div class="ci-name">IaaS</div><div class="ci-ex">Infrastructure as a Service</div><div style="font-size:.69rem;color:var(--muted);margin-top:.28rem">Raw servers &amp; storage<br>e.g. AWS, Azure</div></div>
+          <div class="cloud-item"><div class="ci-icon">🏗️</div><div class="ci-name">PaaS</div><div class="ci-ex">Platform as a Service</div><div style="font-size:.69rem;color:var(--muted);margin-top:.28rem">Dev tools &amp; runtime<br>e.g. Heroku, Firebase</div></div>
+          <div class="cloud-item"><div class="ci-icon">📦</div><div class="ci-name">SaaS</div><div class="ci-ex">Software as a Service</div><div style="font-size:.69rem;color:var(--muted);margin-top:.28rem">Ready-to-use apps<br>e.g. Gmail, Zoom</div></div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <h3>✅ Benefits of Cloud</h3>
+            <ul style="font-size:.85rem;color:var(--muted);padding-left:1.05rem;line-height:2">
+              <li>Access files from any device, anywhere</li>
+              <li>Automatic backups — less data loss risk</li>
+              <li>Scale up or down as needed</li>
+              <li>Lower upfront cost (no expensive servers)</li>
+              <li>Real-time collaboration</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>⚠️ Considerations</h3>
+            <ul style="font-size:.85rem;color:var(--muted);padding-left:1.05rem;line-height:2">
+              <li>Requires an internet connection</li>
+              <li>Privacy — who can see your data?</li>
+              <li>Subscription costs add up</li>
+              <li>Vendor lock-in (hard to switch)</li>
+              <li>Outages affect everyone at once</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>📱 Cloud in Your Daily Life</h3>
+          <div style="display:flex;flex-wrap:wrap;gap:.42rem;margin-top:.55rem">
+            <span class="sw-pill" style="background:rgba(79,124,255,.1);color:var(--electric)">📧 Gmail / Outlook</span>
+            <span class="sw-pill" style="background:rgba(0,212,170,.1);color:#00a882">📂 Google Drive / Dropbox</span>
+            <span class="sw-pill" style="background:rgba(255,107,107,.1);color:#cc4444">🎵 Spotify / Apple Music</span>
+            <span class="sw-pill" style="background:rgba(255,190,61,.12);color:#9a6c00">📹 YouTube / Netflix</span>
+            <span class="sw-pill" style="background:rgba(177,159,255,.15);color:#7b5ea7">🤝 Zoom / Teams</span>
+            <span class="sw-pill" style="background:rgba(79,124,255,.1);color:var(--electric)">🛒 Amazon / Shopify</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE 5: WRAP UP -->
+    <div class="page" id="page5">
+      <div class="content-wrap">
+        <div class="complete-screen">
+          <div class="trophy">🎓</div>
+          <h2>Lesson Complete!</h2>
+          <p>You've finished all four modules. Here's a summary of what you covered:</p>
+          <div class="final-stats">
+            <div class="stat-box"><div class="sv">4</div><div class="sl">Modules</div></div>
+            <div class="stat-box"><div class="sv" id="finalScore">—</div><div class="sl">Activities</div></div>
+            <div class="stat-box"><div class="sv">16+</div><div class="sl">Key Terms</div></div>
+          </div>
+          <div style="max-width:560px;margin:0 auto;text-align:left">
+            <div class="card" style="margin-bottom:.7rem"><h3>🖥️ Hardware &amp; Software</h3><p style="font-size:.85rem">Hardware = physical components (CPU, RAM, storage). Software = instructions that run on hardware. The OS bridges both.</p></div>
+            <div class="card" style="margin-bottom:.7rem"><h3>🌐 Networks &amp; Internet</h3><p style="font-size:.85rem">Networks connect devices. The Internet is the global network of networks. Data travels in packets routed by IP addresses.</p></div>
+            <div class="card" style="margin-bottom:.7rem"><h3>🔐 Cybersecurity</h3><p style="font-size:.85rem">Threats include malware, phishing, and weak passwords. Defend yourself with strong passwords, 2FA, updates, and healthy skepticism.</p></div>
+            <div class="card" style="margin-bottom:1.3rem"><h3>☁️ Cloud Computing</h3><p style="font-size:.85rem">The cloud stores data and runs software on remote servers. IaaS, PaaS, and SaaS are the three service models. You use the cloud every day.</p></div>
+          </div>
+          <button class="btn btn-primary" onclick="restartLesson()">🔄 Start Over</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /pages -->
+
+  <!-- BOTTOM NAV -->
+  <div id="botnav">
+    <button class="btn btn-secondary" id="prevBtn" onclick="navigate(-1)">← Back</button>
+    <span class="step-label" id="stepLabel">Welcome</span>
+    <button class="btn btn-primary"   id="nextBtn" onclick="navigate(1)">Start Lesson →</button>
+  </div>
+
+</div><!-- /shell -->
+
+<script>
+// ══ STATE ══
+const TOTAL = 6;
+let current = 0;
+let activitiesDone = 0;
+const visited = new Set([0]);
+
+const stepLabels = ['Welcome','Module 1 — Hardware & Software','Module 2 — Networks & Internet','Module 3 — Cybersecurity','Module 4 — Cloud Computing','Lesson Complete 🎉'];
+const dotLabels  = ['🏠','1','2','3','4','🎓'];
+
+// ══ NAVIGATION ══
+function goTo(idx, dir) {
+  if (idx < 0 || idx >= TOTAL) return;
+  const direction = (dir !== undefined) ? dir : (idx >= current ? 1 : -1);
+
+  // Hide old page instantly
+  const oldPage = document.getElementById('page' + current);
+  oldPage.classList.remove('active','slide-in-fwd','slide-in-back');
+
+  current = idx;
+  visited.add(idx);
+
+  // Show new page with animation
+  const newPage = document.getElementById('page' + current);
+  newPage.classList.remove('slide-in-fwd','slide-in-back');
+  newPage.classList.add('active', direction >= 0 ? 'slide-in-fwd' : 'slide-in-back');
+  newPage.scrollTop = 0;
+
+  updateUI();
+}
+
+function navigate(dir) { goTo(current + dir, dir); }
+
+function updateUI() {
+  const pct = Math.round((current / (TOTAL - 1)) * 100);
+  document.getElementById('pbFill').style.width = pct + '%';
+  document.getElementById('pbPct').textContent = pct + '%';
+  document.getElementById('stepLabel').textContent = stepLabels[current];
+
+  const prev = document.getElementById('prevBtn');
+  const next = document.getElementById('nextBtn');
+  prev.style.visibility = current === 0 ? 'hidden' : 'visible';
+  if (current === TOTAL - 1) {
+    next.textContent = '✓ Done'; next.disabled = true;
+  } else {
+    next.textContent = current === 0 ? 'Start Lesson →' : 'Next →';
+    next.disabled = false;
+  }
+  buildDots();
+}
+
+function buildDots() {
+  const c = document.getElementById('stepdots');
+  c.innerHTML = '';
+  for (let i = 0; i < TOTAL; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot-step' + (i === current ? ' active' : '') + (visited.has(i) && i !== current ? ' visited' : '');
+    d.textContent = dotLabels[i];
+    d.title = stepLabels[i];
+    d.onclick = () => goTo(i);
+    c.appendChild(d);
+    if (i < TOTAL - 1) {
+      const conn = document.createElement('div');
+      conn.className = 'dot-connector' + (visited.has(i + 1) ? ' done' : '');
+      c.appendChild(conn);
+    }
+  }
+}
+
+// ══ HARDWARE INFO ══
+const hwData = {
+  cpu:     { name:'CPU — Central Processing Unit',  text:'Often called the "brain" of the computer. It processes all instructions — arithmetic, logic, input/output — at billions of operations per second.' },
+  ram:     { name:'RAM — Random Access Memory',      text:"Your computer's short-term workspace. When you open Chrome, the OS loads it into RAM. More RAM = more apps open at once. Clears when you power off." },
+  storage: { name:'Storage — HDD or SSD',           text:'Your long-term memory. Holds your files, photos, apps, and OS permanently. SSDs (flash memory) are much faster than older HDDs (spinning disks).' },
+  gpu:     { name:'GPU — Graphics Processing Unit', text:'Handles rendering images and video. Originally for gaming, GPUs are now also used for AI training, scientific simulations, and video editing.' },
+  io:      { name:'I/O Devices — Input & Output',   text:'Input: keyboard, mouse, microphone, camera. Output: monitor, speakers, printer. They let humans interact with the computer.' }
+};
+function showHW(key, el) {
+  const d = hwData[key];
+  document.getElementById('hwInfo').innerHTML = '<strong>' + d.name + ':</strong> ' + d.text;
+  document.querySelectorAll('.hw-part').forEach(p => p.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+// ══ HW/SW QUIZ ══
+const hwSwItems = [
+  {label:'🖱️ Mouse', answer:'hw'},{label:'🎵 Spotify App', answer:'sw'},
+  {label:'💾 Hard Drive', answer:'hw'},{label:'🪟 Windows OS', answer:'sw'},
+  {label:'🖨️ Printer', answer:'hw'},{label:'🦠 Antivirus', answer:'sw'},
+];
+let hwSwSelected = {};
+function buildHWSW() {
+  document.getElementById('hwSwQuiz').innerHTML = hwSwItems.map((item, i) => `
+    <div class="hwsw-row">
+      <div class="hwsw-label">${item.label}</div>
+      <button class="hwsw-btn hw" id="hws_hw_${i}" onclick="selectHWSW(${i},'hw')">🔩 Hardware</button>
+      <button class="hwsw-btn sw" id="hws_sw_${i}" onclick="selectHWSW(${i},'sw')">💿 Software</button>
+    </div>`).join('');
+}
+function selectHWSW(i, choice) {
+  hwSwSelected[i] = choice;
+  document.getElementById('hws_hw_'+i).className='hwsw-btn hw'+(choice==='hw'?' chosen':' dim');
+  document.getElementById('hws_sw_'+i).className='hwsw-btn sw'+(choice==='sw'?' chosen':' dim');
+}
+function checkHWSW() {
+  if (Object.keys(hwSwSelected).length < hwSwItems.length) { showResult('hwSwResult',false,'Please answer all '+hwSwItems.length+' items first!'); return; }
+  let correct = hwSwItems.filter((item,i) => hwSwSelected[i]===item.answer).length;
+  showResult('hwSwResult', correct===hwSwItems.length, correct===hwSwItems.length
+    ? '🎉 Perfect! '+correct+'/'+hwSwItems.length+' correct!'
+    : correct+'/'+hwSwItems.length+' correct. Remember: Hardware is physical; Software is code.');
+  activitiesDone = Math.max(activitiesDone, 1); updateFinalScore();
+}
+
+// ══ MATCHING QUIZ ══
+const matchTerms = [
+  {term:'Router',     correct:'Directs data packets between networks'},
+  {term:'IP Address', correct:'Unique identifier for a device on a network'},
+  {term:'Protocol',   correct:'A set of rules for communication between devices'},
+  {term:'Bandwidth',  correct:'Max data transfer speed of a connection'},
+];
+function buildMatch() {
+  const shuffled = matchTerms.map(m=>m.correct).sort(()=>Math.random()-.5);
+  document.getElementById('matchQuiz').innerHTML = matchTerms.map((m,i)=>`
+    <div class="match-pair">
+      <div class="match-term">${m.term}</div>
+      <select class="match-select" id="match_${i}">
+        <option value="">— choose —</option>
+        ${shuffled.map(d=>`<option value="${d}">${d}</option>`).join('')}
+      </select>
+      <div class="match-indicator" id="mi_${i}"></div>
+    </div>`).join('');
+}
+function checkMatch() {
+  let correct=0, allFilled=true;
+  matchTerms.forEach((m,i)=>{
+    const val=document.getElementById('match_'+i).value;
+    const ind=document.getElementById('mi_'+i);
+    if(!val){ind.textContent='❓';allFilled=false;return;}
+    ind.textContent=(val===m.correct)?(correct++,'✅'):'❌';
+  });
+  if(!allFilled){showResult('matchResult',false,'Please fill in all matches first.');return;}
+  showResult('matchResult',correct===matchTerms.length,correct===matchTerms.length?'🎉 All '+correct+' correct! Great work!':correct+'/'+matchTerms.length+' correct. Review and try again!');
+  activitiesDone=Math.max(activitiesDone,2); updateFinalScore();
+}
+
+// ══ PASSWORD QUIZ ══
+const pwOpts=[
+  {pw:'password123',good:false,why:'Common password — cracked in under a second!'},
+  {pw:'John1985',good:false,why:'Personal info + simple year — easy to guess.'},
+  {pw:'Tr0ub4dor!',good:false,why:'Better, but a known "clever substitution" pattern.'},
+  {pw:'mQ!7#kLp@z9$',good:true,why:'Long, random, mixed characters — very strong! Use a password manager to remember these.'},
+];
+function buildPW() {
+  document.getElementById('pwOptions').innerHTML=pwOpts.map((p,i)=>`<div class="pw-option" id="pw_${i}" onclick="choosePW(${i})">${p.pw}</div>`).join('');
+}
+function choosePW(i) {
+  document.querySelectorAll('.pw-option').forEach((el,j)=>{
+    el.classList.remove('selected-good','selected-bad');
+    if(j===i) el.classList.add(pwOpts[j].good?'selected-good':'selected-bad');
+  });
+  const p=pwOpts[i];
+  showResult('pwResult',p.good,(p.good?'✅ Correct! ':'❌ Not quite. ')+p.why);
+  if(p.good){activitiesDone=Math.max(activitiesDone,3);updateFinalScore();}
+}
+
+// ══ PHISHING QUIZ ══
+const emails=[
+  {from:'security-alert@paypa1-verify.com',subject:'⚠️ Your account has been LIMITED',body:'Dear valued customer, we have detected unusual activity. Click HERE immediately to verify your identity or your account will be suspended within 24 hours.',isPhish:true,clues:'Red flags: misspelled domain (paypa<strong>1</strong> not paypal), urgency/threats, vague greeting, suspicious link.'},
+  {from:'no-reply@amazon.com',subject:'Your Amazon order #112-4857632 has shipped',body:'Hi Jane, your order of "Wireless Headphones" has shipped and is estimated to arrive Thursday, March 20. Track your package in your account.',isPhish:false,clues:'Looks legitimate: correct domain, specific order number, no urgency, no request for login or personal info.'},
+  {from:'it-support@yourcompany-helpdesk.net',subject:'ACTION REQUIRED: Reset your password now',body:'Your password will expire in 1 hour. To avoid losing access, click the link below and enter your current username and password to reset.',isPhish:true,clues:'Red flags: external domain for "internal" IT, extreme urgency, asks for <em>current password</em> — IT never asks for this!'},
+  {from:'noreply@netflix.com',subject:'New sign-in to your Netflix account',body:'We noticed a new sign-in to your account from a new device on March 18, 2026. If this was you, no action is needed. If not, go to netflix.com to secure your account.',isPhish:false,clues:'Looks legitimate: correct Netflix domain, no suspicious link, directs you to type the URL yourself, no password request.'},
+  {from:'prize-winner@globallottery-intl.com',subject:"🎉 CONGRATULATIONS! You've won $50,000!",body:'You have been selected as our lucky winner! To claim your prize, reply with your full name, address, and bank account number within 48 hours.',isPhish:true,clues:"Classic scam: you didn't enter a lottery, requests sensitive financial info, suspicious domain, too-good-to-be-true prize."},
+];
+let phishAnswers={},phishCorrect=0;
+function buildPhish(){
+  document.getElementById('phishEmails').innerHTML=emails.map((e,i)=>`
+    <div class="email-card" id="email_${i}">
+      <div class="email-from">📧 From: <strong>${e.from}</strong></div>
+      <div class="email-subject">${e.subject}</div>
+      <div class="email-body">${e.body}</div>
+      <div class="email-actions">
+        <button class="email-btn legit" onclick="judgeEmail(${i},false)">✅ Legitimate</button>
+        <button class="email-btn phish" onclick="judgeEmail(${i},true)">🎣 Phishing</button>
+      </div>
+      <div class="email-feedback" id="efb_${i}"></div>
+    </div>`).join('');
+}
+function judgeEmail(i,guessPhish){
+  if(phishAnswers[i]!==undefined) return;
+  const e=emails[i], correct=guessPhish===e.isPhish;
+  phishAnswers[i]=correct;
+  if(correct) phishCorrect++;
+  const card=document.getElementById('email_'+i);
+  card.classList.add(correct?(e.isPhish?'correct-phish':'correct-legit'):'wrong');
+  const fb=document.getElementById('efb_'+i);
+  fb.className='email-feedback show '+(correct?'good':'bad');
+  fb.innerHTML=(correct?'✅ Correct! ':('❌ Actually '+(e.isPhish?'phishing. ':'legitimate. ')))+e.clues;
+  card.querySelectorAll('.email-btn').forEach(b=>{b.disabled=true;b.style.opacity='.5';});
+  const done=Object.keys(phishAnswers).length;
+  document.getElementById('phishScore').textContent=done+'/'+emails.length+' answered — '+phishCorrect+' correct';
+  if(done===emails.length){activitiesDone=Math.max(activitiesDone,4);updateFinalScore();}
+}
+
+// ══ HELPERS ══
+function showResult(id,good,msg){
+  const el=document.getElementById(id);
+  el.className='result-box show '+(good?'good':'bad');
+  el.innerHTML=msg;
+}
+function updateFinalScore(){
+  const el=document.getElementById('finalScore');
+  if(el) el.textContent=activitiesDone;
+}
+function restartLesson(){
+  phishAnswers={}; phishCorrect=0; hwSwSelected={}; activitiesDone=0;
+  visited.clear(); visited.add(0);
+  buildHWSW(); buildMatch(); buildPW(); buildPhish();
+  goTo(0,-1);
+}
+
+// ══ INIT ══
+buildHWSW(); buildMatch(); buildPW(); buildPhish(); updateUI();
+</script>
+</body>
+</html>
